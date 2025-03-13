@@ -1,0 +1,214 @@
+CREAR MIDDLEWARE DE ERROR 
+
+ESTO SE HACE PARA MANEJAR ERRORES, Y HACER MAS FACIL EL MANEJO DE ERRORES
+
+se crea una ruta la cual va a recibir 4 parametros, err, req, res, next 
+esto significa que al momento de en los archivos de ruta crear las funciones con next
+esto se puede utilizar para el cath, usando el next y pasandole un parametro como lo puede ser
+el error 
+
+automaticamente el sistema sabe que debe llegar a la funcion del index que recibe 4 aprametros
+
+¿Cómo funciona next()?
+Cuando un middleware termina su trabajo, tiene tres opciones:
+
+Responder directamente al cliente con res.send(), res.json(), etc.
+Llamar a next() para pasar el control al siguiente middleware.
+Llamar a next(error) para manejar un error y pasarlo a un middleware de manejo de errores.
+Ejemplo básico de next()
+Supongamos que tenemos un middleware que verifica si el usuario está autenticado. Si el usuario está autenticado, pasamos al siguiente middleware con next(). Si no, enviamos un error.
+
+javascript
+Copiar
+Editar
+const verificarAutenticacion = (req, res, next) => {
+    const usuarioAutenticado = req.headers.authorization; 
+
+    if (!usuarioAutenticado) {
+        return res.status(401).json({ error: "No autorizado" }); 
+    }
+
+    next(); // Pasa al siguiente middleware o ruta
+};
+
+app.use(verificarAutenticacion);
+
+app.get('/perfil', (req, res) => {
+    res.json({ mensaje: "Bienvenido al perfil" });
+});
+🔹 Si el usuario tiene el token correcto, next() permite que la solicitud continúe a la ruta /perfil.
+🔹 Si el usuario no tiene el token, se detiene la ejecución y se devuelve un error 401 No autorizado.
+
+next(error) para manejo de errores
+Si queremos manejar errores en un middleware, pasamos un argumento a next(error). Express detecta que es un error y lo envía a un middleware especial para manejar errores.
+
+Ejemplo de manejo de errores
+javascript
+Copiar
+Editar
+const verificarDatos = (req, res, next) => {
+    const { nombre } = req.body;
+    
+    if (!nombre) {
+        const error = new Error("El nombre es obligatorio");
+        error.status = 400; // Código de error Bad Request
+        return next(error); // Pasa el error al middleware de manejo de errores
+    }
+
+    next(); // Continúa si todo está bien
+};
+
+app.post('/usuarios', verificarDatos, (req, res) => {
+    res.json({ mensaje: "Usuario creado con éxito" });
+});
+
+// Middleware de manejo de errores
+app.use((err, req, res, next) => {
+    res.status(err.status || 500).json({
+        error: err.message || "Error interno del servidor"
+    });
+});
+¿Qué sucede aquí?
+🔹 Si el usuario no envía el campo nombre, se genera un error y se envía a next(error).
+🔹 Express detecta el error y lo envía al middleware de manejo de errores, que responde con un código de error y un mensaje.
+🔹 Si todo está bien, la solicitud sigue su curso con next().
+
+y como sabe express que es un error
+ChatGPT dijo:
+¿Cómo sabe Express que es un error? 🤔
+En Express, un middleware normal tiene esta estructura:
+
+javascript
+Copiar
+Editar
+(req, res, next) => { /* lógica aquí */ }
+Mientras que un middleware de manejo de errores tiene cuatro parámetros:
+
+javascript
+Copiar
+Editar
+(err, req, res, next) => { /* maneja el error aquí */ }
+💡 Express sabe que es un error porque el middleware tiene 4 parámetros en lugar de 3.
+
+1️⃣ Cuando llamamos a next(error)
+Si en un middleware llamamos next(error), Express automáticamente lo detecta como un error y salta todos los middleware normales, dirigiéndose directamente al middleware de manejo de errores.
+
+🔹 Ejemplo de error intencional
+javascript
+Copiar
+Editar
+const express = require('express');
+const app = express();
+
+// Middleware que genera un error
+app.get('/error', (req, res, next) => {
+    const error = new Error("Algo salió mal");
+    error.status = 500; // Código de estado HTTP
+    next(error); // Pasamos el error al middleware de errores
+});
+
+// Middleware de manejo de errores
+app.use((err, req, res, next) => {
+    res.status(err.status || 500).json({
+        mensaje: err.message || "Error interno del servidor"
+    });
+});
+
+app.listen(3000, () => console.log("Servidor en puerto 3000"));
+🔹 Si visitamos http://localhost:3000/error, Express detecta next(error) y salta cualquier otro middleware, dirigiendo la solicitud directamente al middleware de errores.
+
+2️⃣ Cuando ocurre una excepción en un middleware
+Si en un middleware ocurre un error inesperado, Express lo detecta solo si usamos next(error) para pasarlo.
+
+javascript
+Copiar
+Editar
+app.get('/crash', (req, res, next) => {
+    try {
+        throw new Error("Falló el servidor"); // Simulamos un error
+    } catch (error) {
+        next(error); // Pasamos el error al middleware de errores
+    }
+});
+🔹 Si no llamamos next(error), el error rompería la aplicación en lugar de manejarse correctamente.
+
+3️⃣ Express ignora errores si no hay un middleware de manejo de errores
+Si no definimos un middleware de errores y llamamos next(error), Express simplemente mostrará un error genérico en el servidor, pero no enviará una respuesta adecuada al cliente.
+
+Por eso, siempre debemos definir un middleware de manejo de errores al final de nuestras rutas.
+
+¿Cómo funciona throw new Error('ALGO FUE MAL') en JavaScript?
+En JavaScript, la sentencia throw se usa para lanzar errores manualmente. Cuando usamos throw new Error('ALGO FUE MAL'), estamos creando y lanzando un objeto de error que detendrá la ejecución del código a menos que sea manejado con un try...catch.
+
+1️⃣ ¿Qué hace throw new Error('ALGO FUE MAL')?
+Cuando se ejecuta esta línea:
+
+javascript
+Copiar
+Editar
+throw new Error('ALGO FUE MAL');
+💥 Se detiene inmediatamente la ejecución del código y se genera un objeto de error con el mensaje 'ALGO FUE MAL'.
+
+Ejemplo básico:
+
+javascript
+Copiar
+Editar
+console.log("Antes del error");
+
+throw new Error("ALGO FUE MAL"); // 🚨 Detiene la ejecución aquí
+
+console.log("Después del error"); // ❌ Nunca se ejecutará
+
+
+VARIABLES DE ENTORNO Y CORS
+
+ (ESTO SE UTILIZA PARA AL MOMENTO DE COMPRATIR EL CODIGO
+O MONTARLO EN GITHUB NO SE VEAN ESAS CREDENCIALES)
+
+instalar npm i dotenv para esto lo que es permitirnos crear un archivo 
+.env en nuestro proyecto 
+
+const { config } = require('dotenv'); // Importamos el módulo dotenv
+config();
+se utiliza para cargar variables de entorno desde un archivo .env en una aplicación Node.js.
+
+📌 ¿Para qué sirve?
+Sirve para mantener información sensible o configurable fuera del código fuente, como:
+
+Credenciales de bases de datos (DB_USER, DB_PASSWORD)
+Claves de API (API_KEY)
+Configuraciones del servidor (PORT)
+🛠️ ¿Cómo funciona?
+1️⃣ Instalar dotenv (si no está instalado):
+
+nginx
+Copiar
+Editar
+npm install dotenv
+2️⃣ Crear un archivo .env en la raíz del proyecto:
+
+ini
+Copiar
+Editar
+PORT=3000
+DB_USER=admin
+DB_PASSWORD=secreto123
+3️⃣ Cargar y usar las variables en Node.js:
+
+javascript
+Copiar
+Editar
+const { config } = require('dotenv');
+config(); // Carga las variables del archivo .env
+
+console.log(process.env.PORT); // 3000
+console.log(process.env.DB_USER); // admin
+console.log(process.env.DB_PASSWORD); // secreto123
+🔎 ¿Cómo dotenv lo hace posible?
+1️⃣ config() lee el archivo .env
+2️⃣ Guarda las variables en process.env, que es un objeto global en Node.js
+3️⃣ Podemos acceder a estas variables en cualquier parte de la app con process.env.NOMBRE_VARIABLE
+
+
+
