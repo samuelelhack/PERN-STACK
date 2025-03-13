@@ -24,9 +24,9 @@ router.get('/tareas/:id',obtenerUnUsuario) // :id es un parametro que se puede e
 // una de ellas es postman o thunder client
 
 router.post('/tareas', registrarUsuario)
-router.delete('/tareas',eliminarTarea)
+router.delete('/tareas/:id',eliminarTarea)
 
-router.put('/tareas',actualizarTarea)
+router.put('/tareas/:id',actualizarTarea)
 
 // en el metodo http existen distintas formas de enviar informacion, una de ellas es a traves de la url
 // get para obtener informacion

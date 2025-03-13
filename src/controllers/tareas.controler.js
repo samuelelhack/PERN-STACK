@@ -44,12 +44,37 @@ const registrarUsuario = async (req, res) => {
     
 };
 
-const actualizarTarea = (req, res) => {
-    res.send('actualizando una tarea');
+const actualizarTarea = async (req, res) => {
+    const {id} = req.params
+    const { nombre, correo, rol, clave} = req.body
+    try {
+        const results = await pool.query('UPDATE usuarios SET nombre = $1, correo = $2, rol = $3, clave = $4 WHERE id = $5 RETURNING *', [nombre, correo, rol, clave, id])
+        console.log(results)
+        if (results.rowCount === 0){
+            res.json({message: 'USUARIO NO EXISTE'});
+        }else{
+            res.json(results.rows[0]);
+        }
+    } catch (error) {
+        console.log(error.message)
+    }
 };
 
-const eliminarTarea = (req, res) => {
-    res.send('eliminando una tarea');
+const eliminarTarea = async (req, res) => {
+    const {id} = req.params
+    try {
+        const eliminar  = await pool.query('DELETE FROM usuarios WHERE id = $1 RETURNING *', [id])
+        console.log(eliminar.rows)
+        if (eliminar.rowCount === 0) {
+            return res.status(404).json({message: 'No se encontro el usuario'})
+        }else{
+            res.json({message: 'Usuario eliminado'})
+            //res.sendStatus(204) //esto es para que nos retorne un status 204 que significa que se elimino correctamente, es decir manda el body vacio
+        }
+    } catch (error) {
+        console.log(error.message)
+    }
+    
 };
 
 module.exports = {
