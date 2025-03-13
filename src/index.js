@@ -8,5 +8,13 @@ app.use(express.json()) // esto es para que el servidor entienda el formato json
 
 app.use(tareasRoutes)
 
+
+// esta funcion lo que hace es identificar un error y devolverlo
+app.use((err, req, res, next) => {
+    return res.json({
+        message: err.message
+    })
+})
+
 app.listen(3000)
 console.log('Server corriendo en el puerto 3000')

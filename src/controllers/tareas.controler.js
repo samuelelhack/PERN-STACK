@@ -1,18 +1,22 @@
 const { json } = require('express');
 const pool = require('../db');
 
-const obtenerUsuarios = async (req, res) => {
+const obtenerUsuarios = async (req, res, next) => {
     try {
     const tareas = await pool.query('SELECT * FROM usuarios') //esto es para hacer una consulta a la base de datos
     
     res.json(tareas.rows)
+
+    if (tareas.rowCount === 0){
+        throw new Error(`No hay usuarios`); //esto crea un error manualmente y especializado
+    }
     
     } catch (error) {
-        console.log(error.message) //esto es bueno solo en desarrollo, en produccion no se debe mostrar el error
+        next(error) //esto es bueno solo en desarrollo, en produccion no se debe mostrar el error
     }
 }
 
-const obtenerUnUsuario = async (req, res) => { //esto es para obtener un usuario en especifico
+const obtenerUnUsuario = async (req, res, next) => { //esto es para obtener un usuario en especifico
     const {id} = req.params //esto es para ver los parametros que se envian en la url
     try {
         const result = await pool.query('SELECT * FROM usuarios WHERE id = $1', [id])
@@ -23,11 +27,11 @@ const obtenerUnUsuario = async (req, res) => { //esto es para obtener un usuario
         }
         
     } catch (error) {
-        console.log(error.message)   
+        next(error) 
     }
 };
 
-const registrarUsuario = async (req, res) => {
+const registrarUsuario = async (req, res, next) => {
    // const tarea = req.body //esto es para obtener los datos que se envian en el body de la peticion
     const { nombre, correo, rol, clave} = req.body //esto es para obtener los datos haciendo destructuracion, trayendo solo los datos que necesitamos
     try{
@@ -38,13 +42,13 @@ const registrarUsuario = async (req, res) => {
         res.json(result.rows[0]); //esto es para que nos retorne el primer elemento del array que nos retorna la base de datos
     
     }catch(error){
-    
-        res.json({error: error.message}); //esto es bueno solo en desarrollo, en produccion no se debe mostrar el error
+        next(error)
+        //esto es bueno solo en desarrollo, en produccion no se debe mostrar el error
     }
     
 };
 
-const actualizarTarea = async (req, res) => {
+const actualizarTarea = async (req, res, next) => {
     const {id} = req.params
     const { nombre, correo, rol, clave} = req.body
     try {
@@ -56,11 +60,11 @@ const actualizarTarea = async (req, res) => {
             res.json(results.rows[0]);
         }
     } catch (error) {
-        console.log(error.message)
+        next(error)
     }
 };
 
-const eliminarTarea = async (req, res) => {
+const eliminarTarea = async (req, res, next) => {
     const {id} = req.params
     try {
         const eliminar  = await pool.query('DELETE FROM usuarios WHERE id = $1 RETURNING *', [id])
@@ -72,7 +76,7 @@ const eliminarTarea = async (req, res) => {
             //res.sendStatus(204) //esto es para que nos retorne un status 204 que significa que se elimino correctamente, es decir manda el body vacio
         }
     } catch (error) {
-        console.log(error.message)
+        next(error)
     }
     
 };
