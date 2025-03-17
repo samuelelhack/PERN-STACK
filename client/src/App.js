@@ -13,7 +13,7 @@ function App() {
       <Route>
         <Route path='/' element={<ListaUsuarios />}/>
         <Route path='/usuarios/nuevo' element={<CrearUsuario />}/>
-        {/*falta la ruta editar*/}
+        <Route path='/usuarios/:id/edit' element={<CrearUsuario />}/>
       </Route>
     </Routes>
     </Container>

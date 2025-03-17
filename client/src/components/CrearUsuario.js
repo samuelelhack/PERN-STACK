@@ -1,7 +1,9 @@
 import { Button, Card, CardContent, Grid2, TextField, Typography, MenuItem, Select, FormControl, InputLabel, CircularProgress } from "@mui/material"
+
 import { useState, useEffect } from "react";
 import { createRequestHandler } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+
 
 function CrearUsuario() {
 
@@ -12,30 +14,58 @@ function CrearUsuario() {
     clave: ''
   })
 
+  const [editar, setEditar] = useState(false);
   const [cargando, setCargando] = useState(false)
 
   const navigate = useNavigate()
+  const params = useParams() //sirve para recibir los parametros de la url
 
   const handleSubmit = async (e) =>{
     e.preventDefault();
 
     setCargando(true)
 
-    const respuesta = await fetch('http://localhost:4000/tareas', {
-      method: 'POST',
-      body: JSON.stringify(valores), // lo que hacemos es transformas los datos en un string 
-      headers: {"Content-Type": "application/json"}, //esto se hace para que sepa que es un objeto json
-    }) 
-    const data = await respuesta.json();
-    console.log(data);
+    if(editar){
+      await fetch(`http://localhost:4000/tareas/${params.id}`,{
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(valores)
+      });
 
+    }else{
+      const respuesta = await fetch('http://localhost:4000/tareas', {
+        method: 'POST',
+        body: JSON.stringify(valores), // lo que hacemos es transformas los datos en un string 
+        headers: {"Content-Type": "application/json"}, //esto se hace para que sepa que es un objeto json
+      }) 
+      const data = await respuesta.json();
+      console.log(data);
+
+    }
+   
     setCargando(false)
     navigate('/') //para redireccionar al home sin refrescar la pagina
     };
 
+  const cargarUsuario = async (id) => {
+    const res = await fetch(`http://localhost:4000/tareas/${id}`)
+    const data = await res.json();
+    setValores({nombre: data.nombre, correo: data.correo, rol: data.rol, clave: data.clave}) 
+    setEditar(true)
+  }
+
   const handleChange = (e) => 
     setValores({...valores, [e.target.name]: e.target.value});
   
+  useEffect(()=> { //sirve para validar 
+      console.log(params);
+      if (params.id){
+        cargarUsuario(params.id)
+      }
+  },[params.id])
+
 
   return (
     <Grid2 container direction="colum" alignItems='center' justifyContent='center'>
@@ -49,7 +79,7 @@ function CrearUsuario() {
           padding: "1rem"
         }}>
           <Typography variant="5" textAlign="center" color="white">
-            Crear un Usuario
+            {editar? "EDITAR USUARIO" : "CREAR USURIO"}
           </Typography>
 
           <CardContent> {/** par acolocar elementos dentro de la tarjeta */}
@@ -58,7 +88,7 @@ function CrearUsuario() {
               <TextField  
               variant='filled' 
               label="Nombre"
-              
+              value= {valores.nombre} //es importante tener esto para hacer los editar
               sx={{
                 display: "block",
                 margin: '.5rem 0'
@@ -82,7 +112,7 @@ function CrearUsuario() {
               <TextField 
               variant="filled" 
               label='Correo'
-              
+              value= {valores.correo}
               sx={{
                 display: "block",
                 margin: '.5rem 0'
@@ -122,7 +152,7 @@ function CrearUsuario() {
               <TextField  
               variant='filled' 
               label="Clave"
-              
+              value= {valores.clave}
               //multiline
              //rows={4}
 
@@ -151,7 +181,7 @@ function CrearUsuario() {
               type="submit"
               disabled={!valores.clave || !valores.nombre}
               >
-                {cargando? <CircularProgress color='inherit' size={24}/> : 'Crear'}
+                {cargando? <CircularProgress color='inherit' size={24}/> : 'Guardar'}
               </Button>
             </form>
           </CardContent> 
