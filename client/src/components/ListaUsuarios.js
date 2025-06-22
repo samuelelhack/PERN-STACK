@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, Grid2, TextField, Typography, MenuItem, Select, FormControl, InputLabel, listClasses } from "@mui/material"
+import { Button, Card, CardContent, Typography } from "@mui/material"
 import { useEffect } from "react" //sirve para hacer peticiones al backend
 import { useState } from "react"
 import { useNavigate } from "react-router-dom";
@@ -6,13 +6,13 @@ import { useNavigate } from "react-router-dom";
 function ListaUsuarios() {
 
 
-  const navigate = useNavigate()
+  const navigate = useNavigate() 
   
   // LISTAR USUARIOS
   const [Lista, setLista] = useState([])
 
-  const cargarTareas = async () => {
-    const res = await fetch('http://localhost:4000/tareas')
+  const cargarEmpleados = async () => {
+    const res = await fetch('http://localhost:4000/listaEmpleados')
     const data = await res.json();
     setLista(data)
     console.log(data)
@@ -39,7 +39,7 @@ function ListaUsuarios() {
 
   //RECIBIR DATOS
   useEffect(() => {
-    cargarTareas()
+    cargarEmpleados()
    
   }, [])
 
@@ -53,14 +53,13 @@ function ListaUsuarios() {
             backgroundColor: '#1e272e',
            
           }}
-          key = {lista.id}
+          key = {lista.cedula}
           >
             <CardContent style={{display: 'flex', justifyContent: 'space-between'}}>
               <div style={{color: 'white'}}>
               <Typography>{lista.nombre}</Typography>
+              <Typography>{lista.apellido}</Typography>
               <Typography>{lista.correo}</Typography>
-              <Typography>{lista.rol}</Typography>
-              <Typography>{lista.clave}</Typography>
               </div>
               
               <div>

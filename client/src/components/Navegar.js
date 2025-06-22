@@ -12,7 +12,7 @@ function Menu() {
         sx={{ /** a propiedad sx es una forma de aplicar estilos personalizados a los componentes de Material-UI.
           Es similar a style en HTML, pero con superpoderes adicionales, como acceso al tema de Material-UI y soporte para pseudoclases y selectores. */
           width: '250px', //ANCHO 
-          flexShrink: 0, // Esta propiedad evita que el Drawer se encoja cuando el contenedor principal tiene un tamaño reducido.
+          flexShrink: 0, // Esta propiedad evita que el Drawer se encoja cuando el contenedor principal tiene un tamaño reducido. 
           /*Es útil cuando el Drawer está dentro de un contenedor flexible (flexbox), ya que garantiza que mantenga su tamaño original. */
           '& .MuiDrawer-paper': { /*Aquí se están aplicando estilos específicos al papel (el contenido interno) del Drawer.
             & se refiere al componente actual (Drawer), y .MuiDrawer-paper es una clase interna de Material-UI que representa el contenido del Drawer. */
@@ -32,6 +32,14 @@ function Menu() {
               PERN STACK
             </Link>
           </Typography>
+          <Button
+            variant="contained"
+            color='secondary'
+            onClick={() => navigate('/usuarios/nuevo')}
+            sx={{ marginTop: '16px' }}
+          >
+            Nuevo Usuario
+          </Button>
           <Button
             variant="contained"
             color='secondary'
