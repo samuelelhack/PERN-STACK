@@ -1,14 +1,14 @@
 const { json } = require('express');
 const pool = require('../db');
 
-const obtenerUsuarios = async (req, res, next) => {
+const listaEmpleados = async (req, res, next) => {
     try {
-    const tareas = await pool.query('SELECT * FROM usuarios') //esto es para hacer una consulta a la base de datos
+    const empleados = await pool.query('SELECT * FROM empleados') //esto es para hacer una consulta a la base de datos
     
-    res.json(tareas.rows)
+    res.json(empleados.rows)
 
-    if (tareas.rowCount === 0){
-        throw new Error(`No hay usuarios`); //esto crea un error manualmente y especializado
+    if (empleados.rowCount === 0){
+        throw new Error(`No hay empleados`); //esto crea un error manualmente y especializado
     }
     
     } catch (error) {
@@ -31,11 +31,11 @@ const obtenerUnUsuario = async (req, res, next) => { //esto es para obtener un u
     }
 };
 
-const registrarUsuario = async (req, res, next) => {
-   // const tarea = req.body //esto es para obtener los datos que se envian en el body de la peticion
-    const { nombre, correo, rol, clave} = req.body //esto es para obtener los datos haciendo destructuracion, trayendo solo los datos que necesitamos
+const registrarEmpleado = async (req, res, next) => {
+   
+    const { cedula, nombre, apellido, correo, telefono , cod_camisa, cod_pantalon, cod_zapato} = req.body //esto es para obtener los datos haciendo destructuracion, trayendo solo los datos que necesitamos
     try{
-        const result = await pool.query('INSERT INTO usuarios (nombre, correo, rol, clave) VALUES ($1, $2, $3, $4) RETURNING *', [ nombre, correo, rol, clave])
+        const result = await pool.query('INSERT INTO empleados (cedula, nombre, apellido, correo, telefono , cod_camisa, cod_pantalon, cod_zapato) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [ cedula, nombre, apellido, correo, telefono , cod_camisa, cod_pantalon, cod_zapato])
         // el values ($1, $2) es para que se inserten los valores en el orden que se colocan en el array
         // $1 y $2 hacen referencia a los valores que se colocan en el array
         // EL RETURNING * es para que nos retorne los datos que se insertaron en la base de datos
@@ -83,9 +83,9 @@ const eliminarTarea = async (req, res, next) => {
 
 module.exports = {
     // getAllTareas : getAllTareas //tambien se puede hacer de esta forma
-    obtenerUsuarios, //esto es lo mismo que la linea de arriba
+    listaEmpleados, //esto es lo mismo que la linea de arriba
     obtenerUnUsuario,
-    registrarUsuario,
+    registrarEmpleado,
     actualizarTarea,
     eliminarTarea
 }
